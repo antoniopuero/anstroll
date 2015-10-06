@@ -1,7 +1,7 @@
-//navigator.geolocation.getCurrentPosition(function(position) {
-//  (position.coords.latitude, position.coords.longitude);
-//});
+navigator.geolocation.getCurrentPosition(function(position) {
+  if (!/&lat/.test(location.href)) {
+    location.href = location.href + '?long=' + position.coords.longitude.toPrecision(2) + '&lat=' + position.coords.latitude.toPrecision(2);
+  }
+});
 
 require('./app.less')
-
-console.log('hi there')

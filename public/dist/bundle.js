@@ -44,15 +44,15 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	//navigator.geolocation.getCurrentPosition(function(position) {
-	//  (position.coords.latitude, position.coords.longitude);
-	//});
-
 	'use strict';
 
-	__webpack_require__(1);
+	navigator.geolocation.getCurrentPosition(function (position) {
+	  if (!/&lat/.test(location.href)) {
+	    location.href = location.href + '?long=' + position.coords.longitude.toPrecision(2) + '&lat=' + position.coords.latitude.toPrecision(2);
+	  }
+	});
 
-	console.log('hi there');
+	__webpack_require__(1);
 
 /***/ },
 /* 1 */

@@ -4,9 +4,11 @@ var forsquare = require('../services/forsquare-service');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  forsquare.explore(function (err, data) {
+  var long = req.query.long, lat = req.query.lat;
+  forsquare.explore(long + ',' + lat).then(function (data) {
     res.render('venues', {data: JSON.stringify(data)});
   });
 });
+
 
 module.exports = router;
