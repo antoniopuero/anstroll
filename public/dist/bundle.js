@@ -53,6 +53,7 @@
 	  console.log(tag, x);
 	  return x;
 	});
+
 	var getCoords = R.compose(R.join(','), R.values, R.pickAll(['latitude', 'longitude']), R.prop('coords'));
 
 	navigator.geolocation.getCurrentPosition(function (position) {

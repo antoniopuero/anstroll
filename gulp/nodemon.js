@@ -8,9 +8,13 @@ module.exports = function () {
   nodemon({ script: path.resolve(__dirname, '../bin/www')
     , ext: 'html js less jade'
     , ignore: [path.resolve(__dirname, '../public/dist/bundle.js'), path.resolve(__dirname, '../gulp/*')]
-    , tasks: ['webpack']
+    , tasks: ['webpack', 'debug']
+    , nodeArgs: ['--harmony', '--use_strict', '--debug']
     })
     .on('start', function() {
       setTimeout(livereload.reload, 500);
     })
 };
+
+
+module.exports.dependencies = ['webpack', 'debug'];
