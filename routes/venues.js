@@ -4,10 +4,19 @@ var forsquare = require('../services/forsquare-service');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  var long = req.query.long, lat = req.query.lat;
-  forsquare.explore(long + ',' + lat).then(function (data) {
-    res.render('venues', {data: JSON.stringify(data)});
-  });
+  res.render('venues');
+});
+
+router.get('/data', function (req, res, next) {
+  var ll = req.query.ll;
+
+  if (!ll) {
+    res.status(500).send({error: 'Lat and long should be provided'});
+  } else {
+    forsquare.explore(req.query).then(function (data) {
+      res.json(data);
+    });
+  }
 });
 
 

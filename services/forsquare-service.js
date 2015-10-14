@@ -1,6 +1,6 @@
 var fetch = require('node-fetch');
 var querystring = require('querystring');
-var _ = require('lodash');
+var extend = require('extend');
 var moment = require('moment');
 
 
@@ -13,8 +13,8 @@ var defaults = {
 };
 
 module.exports = {
-  explore: function (ll) {
-    return fetch(baseUrl + 'venues/explore?' + querystring.stringify(_.extend({}, defaults, {ll: ll})), {
+  explore: function (queryData) {
+    return fetch(baseUrl + 'venues/explore?' + querystring.stringify(extend({}, defaults, queryData)), {
       method: 'GET'
     }).then(function (response) {
       return response.json();
