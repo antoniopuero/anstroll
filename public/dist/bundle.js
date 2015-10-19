@@ -63,7 +63,8 @@
 	(0, _reactDom.render)(_react2['default'].createElement(
 	  _reactRouter.Router,
 	  null,
-	  _react2['default'].createElement(_reactRouter.Route, { path: '/', component: _app2['default'] })
+	  _react2['default'].createElement(_reactRouter.Route, { path: 'app', component: _app2['default'] }),
+	  _react2['default'].createElement(_reactRouter.Redirect, { from: '*', to: 'app' })
 	), document.getElementById('main'));
 
 /***/ },
