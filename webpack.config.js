@@ -1,9 +1,15 @@
 module.exports = {
-  context: __dirname + "/public",
-  entry: "./app.js",
+  context: __dirname,
+  entry: "./public/router",
   output: {
     path: __dirname + "/public/dist",
     filename: "bundle.js"
+  },
+  devtool: 'source-map',
+  debug: true,
+  resolve: {
+    extensions: ["", ".webpack.js", ".web.js", ".js", ".es6"],
+    root: __dirname
   },
   module: {
     loaders: [

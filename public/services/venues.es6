@@ -1,12 +1,12 @@
-let {ajax} = require('jquery');
+import {ajax} from 'jquery';
 
-module.exports = {
+export default {
   getClosest: function (ll) {
     return ajax({
       url: '/venues/data',
       data: {
         ll: ll,
-        radius: 3000
+        radius: 300
       }
     })
   }

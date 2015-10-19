@@ -6,9 +6,9 @@ var gulp = require('gulp');
 module.exports = function () {
   livereload.listen();
   nodemon({ script: path.resolve(__dirname, '../bin/www')
-    , ext: 'html js less jade'
+    , ext: 'html js less jade es6'
     , ignore: [path.resolve(__dirname, '../public/dist/bundle.js'), path.resolve(__dirname, '../gulp/*')]
-    , tasks: ['webpack', 'debug']
+    , tasks: ['webpack']
     , nodeArgs: ['--harmony', '--use_strict', '--debug']
     })
     .on('start', function() {
