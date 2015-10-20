@@ -1,8 +1,8 @@
 module.exports = {
   context: __dirname,
-  entry: "./public/router",
+  entry: "./client/router",
   output: {
-    path: __dirname + "/public/dist",
+    path: __dirname + "/client/dist",
     filename: "bundle.js"
   },
   devtool: 'source-map',

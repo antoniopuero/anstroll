@@ -11,7 +11,9 @@ let trace = R.curry((tag, x) => {
   return x;
 });
 
-let getCoords = R.compose(R.join(',') , R.values, R.pickAll(['latitude', 'longitude']), R.prop('coords'));
+let getCoords = R.compose(R.join(',') , R.map(coord => coord.toPrecision(4)), R.values, R.pickAll(['latitude', 'longitude']), R.prop('coords'));
+
+let getClosestVenues = R.compose(R.curry(venues.getClosest), getCoords);
 
 class App extends React.Component {
 
@@ -24,13 +26,13 @@ class App extends React.Component {
 
     navigator.geolocation.getCurrentPosition(function(position) {
 
-      venues.getClosest(getCoords(position)).then(function (data) {
+      getClosestVenues(position).then(function (data) {
         console.log(data);
       })
 
     });
 
-    return <div>hi</div>;
+    return <div>App component</div>;
   }
 }
 

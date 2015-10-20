@@ -23999,7 +23999,11 @@
 	  return x;
 	});
 	
-	var getCoords = _ramda2['default'].compose(_ramda2['default'].join(','), _ramda2['default'].values, _ramda2['default'].pickAll(['latitude', 'longitude']), _ramda2['default'].prop('coords'));
+	var getCoords = _ramda2['default'].compose(_ramda2['default'].join(','), _ramda2['default'].map(function (coord) {
+	  return coord.toPrecision(4);
+	}), _ramda2['default'].values, _ramda2['default'].pickAll(['latitude', 'longitude']), _ramda2['default'].prop('coords'));
+	
+	var getClosestVenues = _ramda2['default'].compose(_ramda2['default'].curry(_servicesVenues2['default'].getClosest), getCoords);
 	
 	var App = (function (_React$Component) {
 	  _inherits(App, _React$Component);
@@ -24016,7 +24020,7 @@
 	
 	      navigator.geolocation.getCurrentPosition(function (position) {
 	
-	        _servicesVenues2['default'].getClosest(getCoords(position)).then(function (data) {
+	        getClosestVenues(position).then(function (data) {
 	          console.log(data);
 	        });
 	      });
@@ -24024,7 +24028,7 @@
 	      return _react2['default'].createElement(
 	        'div',
 	        null,
-	        'hi'
+	        'App component'
 	      );
 	    }
 	  }]);
@@ -24050,7 +24054,7 @@
 	exports['default'] = {
 	  getClosest: function getClosest(ll) {
 	    return (0, _jquery.ajax)({
-	      url: '/venues/data',
+	      url: '/api/venues',
 	      data: {
 	        ll: ll,
 	        radius: 300

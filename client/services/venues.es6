@@ -3,7 +3,7 @@ import {ajax} from 'jquery';
 export default {
   getClosest: function (ll) {
     return ajax({
-      url: '/venues/data',
+      url: '/api/venues',
       data: {
         ll: ll,
         radius: 300
