@@ -7,7 +7,7 @@ module.exports = function () {
   livereload.listen();
   nodemon({ script: path.resolve(__dirname, '../bin/www')
     , ext: 'html js less jade es6'
-    , ignore: [path.resolve(__dirname, '../client/dist/bundle.js'), path.resolve(__dirname, '../gulp/*')]
+    , ignore: [path.resolve(__dirname, '../client/dist/*'), path.resolve(__dirname, '../gulp/*')]
     , tasks: ['webpack']
     , nodeArgs: ['--harmony', '--use_strict', '--debug']
     })

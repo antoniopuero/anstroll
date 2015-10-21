@@ -1,13 +1,20 @@
+var webpack = require("webpack");
 module.exports = {
   context: __dirname,
-  entry: "./client/router",
+  entry: {
+    'starter-point': './client/entries/starter-point/starter-point',
+    vendor: ['react', 'ramda', 'react-dom']
+  },
   output: {
     path: __dirname + "/client/dist",
-    filename: "bundle.js"
+    filename: "[name].bundle.js"
   },
   devtool: 'source-map',
   debug: true,
   resolve: {
+    alias: {
+      services: __dirname + '/client/services'
+    },
     extensions: ["", ".webpack.js", ".web.js", ".js", ".es6"],
     root: __dirname
   },
@@ -22,5 +29,8 @@ module.exports = {
         loader: 'style!css!less'
       }
     ]
-  }
+  },
+  plugins: [
+    new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js')
+  ]
 };
