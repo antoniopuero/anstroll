@@ -1,6 +1,6 @@
 {
   "name": "anstroll",
-  "version": "0.0.0",
+  "version": "0.0.1-SNAPSHOT",
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www"
@@ -12,14 +12,22 @@
     "express": "~4.13.1",
     "extend": "^3.0.0",
     "jade": "~1.11.0",
-    "jquery": "^2.1.4",
+    "keymirror": "^0.1.1",
+    "material-ui": "^0.13.0",
     "moment": "^2.10.6",
     "morgan": "~1.6.1",
     "node-fetch": "^1.3.3",
     "ramda": "^0.18.0",
     "react": "^0.14.0",
+    "react-addons-create-fragment": "^0.14.0",
+    "react-addons-pure-render-mixin": "^0.14.0",
+    "react-addons-transition-group": "^0.14.0",
+    "react-addons-update": "^0.14.0",
     "react-dom": "^0.14.0",
-    "serve-favicon": "~2.3.0"
+    "react-tap-event-plugin": "^0.2.1",
+    "reactive-flux": "^0.1.2",
+    "serve-favicon": "~2.3.0",
+    "superagent": "^1.4.0"
   },
   "devDependencies": {
     "babel-core": "^5.8.25",

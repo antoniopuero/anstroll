@@ -1,7 +1,11 @@
 import venues from 'services/venues'
 import R from 'ramda'
+import Component from '../react-component'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import {TextField} from 'material-ui'
+import {updateTextField} from '../actions'
+import mainStore from '../store'
 
 import './starter-point.less'
 
@@ -15,14 +19,14 @@ let getCoords = R.compose(R.join(',') , R.map(coord => coord.toPrecision(4)), R.
 
 let getClosestVenues = R.compose(R.curry(venues.getClosest), getCoords);
 
-class App extends React.Component {
+class App extends Component {
 
   constructor (props) {
     super(props);
+    this.state = mainStore.getState();
   }
 
-  render () {
-
+  componentWillMount () {
 
     navigator.geolocation.getCurrentPosition(function(position) {
 
@@ -31,8 +35,22 @@ class App extends React.Component {
       })
 
     });
+  }
 
-    return <div>Starter point</div>;
+  _handleFloatingInputChange (e) {
+    updateTextField(e.target.value);
+  }
+
+  render () {
+
+    return <div>
+
+      <TextField
+        hintText="Hint Text"
+        floatingLabelText="Floating Label Text"
+        value={this.state.textInputValue}
+        onChange={this._handleFloatingInputChange} />
+    </div>;
   }
 }
 
