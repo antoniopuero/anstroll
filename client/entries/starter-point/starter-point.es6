@@ -1,5 +1,7 @@
 import venues from 'services/venues'
 import R from 'ramda'
+import {receiveTexts} from 'services/cms'
+import {getText, setTexts} from 'services/texts'
 import Component from '../react-component'
 import React from 'react'
 import ReactDOM from 'react-dom'
@@ -43,17 +45,22 @@ class App extends Component {
 
   render () {
 
-    return <div>
-
+    return (<div>
       <TextField
-        hintText="Hint Text"
-        floatingLabelText="Floating Label Text"
+        hintText={getText('floatingLabelText')}
+        floatingLabelText={getText('floatingLabelText')}
         value={this.state.textInputValue}
         onChange={this._handleFloatingInputChange} />
-    </div>;
+    </div>);
   }
 }
 
-ReactDOM.render(<App/>, document.getElementById('main'));
+
+receiveTexts().then((res) => {
+  console.log(res);
+  setTexts(res.body);
+
+  ReactDOM.render(<App/>, document.getElementById('main'));
+});
 
 export default App;

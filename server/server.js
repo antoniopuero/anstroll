@@ -4,9 +4,11 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var i18n = require('./i18n-init');
 
 var staticRoutes = require('./routes/static');
 var venues = require('./routes/venues');
+var cms = require('./routes/cms');
 
 var app = express();
 
@@ -21,9 +23,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../client')));
+app.use(i18n.init);
 
 app.use('/', staticRoutes);
 app.use('/api/venues', venues);
+app.use('/api/cms', cms);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
