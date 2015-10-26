@@ -5,13 +5,14 @@ var gulp = require('gulp');
 
 module.exports = function () {
   livereload.listen();
-  nodemon({ script: path.resolve(__dirname, '../bin/www')
+  nodemon({
+    script: path.resolve(__dirname, '../bin/www')
     , ext: 'html js less jade es6'
     , ignore: [path.resolve(__dirname, '../client/dist/*'), path.resolve(__dirname, '../gulp/*')]
     , tasks: ['webpack']
     , nodeArgs: ['--harmony', '--use_strict', '--debug']
-    })
-    .on('start', function() {
+  })
+    .on('start', function () {
       setTimeout(livereload.reload, 500);
     })
 };

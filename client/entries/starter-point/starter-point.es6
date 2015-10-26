@@ -1,25 +1,14 @@
 import venues from 'services/venues'
-import R from 'ramda'
 import {receiveTexts} from 'services/cms'
 import {getText, setTexts} from 'services/texts'
 import Component from '../react-component'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {TextField} from 'material-ui'
-import {updateTextField} from '../actions'
+import {TextField, CardMedia, CardTitle} from 'material-ui'
+import {updateTextField, updateStartCoords} from '../actions'
 import mainStore from '../store'
 
 import './starter-point.less'
-
-let _ = R.__;
-let trace = R.curry((tag, x) => {
-  console.log(tag, x);
-  return x;
-});
-
-let getCoords = R.compose(R.join(',') , R.map(coord => coord.toPrecision(4)), R.values, R.pickAll(['latitude', 'longitude']), R.prop('coords'));
-
-let getClosestVenues = R.compose(R.curry(venues.getClosest), getCoords);
 
 class App extends Component {
 
@@ -29,14 +18,7 @@ class App extends Component {
   }
 
   componentWillMount () {
-
-    navigator.geolocation.getCurrentPosition(function(position) {
-
-      getClosestVenues(position).then(function (data) {
-        console.log(data);
-      })
-
-    });
+    navigator.geolocation.getCurrentPosition(updateStartCoords);
   }
 
   _handleFloatingInputChange (e) {
@@ -46,18 +28,21 @@ class App extends Component {
   render () {
 
     return (<div>
+      <CardMedia overlay={<CardTitle title="Title" subtitle="Subtitle"/>}>
+        <img src="http://lorempixel.com/g/600/337/people/"/>
+      </CardMedia>
+
       <TextField
         hintText={getText('floatingLabelText')}
         floatingLabelText={getText('floatingLabelText')}
         value={this.state.textInputValue}
-        onChange={this._handleFloatingInputChange} />
+        onChange={this._handleFloatingInputChange}/>
     </div>);
   }
 }
 
 
 receiveTexts().then((res) => {
-  console.log(res);
   setTexts(res.body);
 
   ReactDOM.render(<App/>, document.getElementById('main'));

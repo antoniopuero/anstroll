@@ -1,7 +1,7 @@
 let i18n = require("i18n");
 i18n.configure({
   // setup some locales - other locales default to en silently
-  locales:['en', 'ua'],
+  locales: ['en', 'ua'],
 
   // you may alter a site wide default locale
   defaultLocale: 'en',

@@ -8,14 +8,14 @@ class Component extends React.Component {
     super(props);
   }
 
-  componentDidMount() {
+  componentDidMount () {
     let self = this;
     this._subscription = mainStore.subscribe(function () {
       self.setState(mainStore.getState());
     });
   }
 
-  componentWillUnmount() {
+  componentWillUnmount () {
     this._subscription.dispose();
   }
 
