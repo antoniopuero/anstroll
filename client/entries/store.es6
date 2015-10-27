@@ -38,7 +38,14 @@ class mainStore extends Store {
   getState () {
     return {
       textInputValue: localStorage.getItem(keys.TEXT_INPUT_VALUE),
-      startCoords: localStorage.getItem(keys.START_COORDINATES)
+      startCoords: localStorage.getItem(keys.START_COORDINATES),
+      menuItems: [
+        { payload: '1', text: 'Never' },
+        { payload: '2', text: 'Every Night' },
+        { payload: '3', text: 'Weeknights' },
+        { payload: '4', text: 'Weekends' },
+        { payload: '5', text: 'Weekly' }
+      ]
     };
   }
 }

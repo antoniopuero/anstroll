@@ -46,7 +46,15 @@ webpackJsonp([0],[
 	
 	var _store2 = _interopRequireDefault(_store);
 	
-	__webpack_require__(329);
+	var _reactTapEventPlugin = __webpack_require__(329);
+	
+	var _reactTapEventPlugin2 = _interopRequireDefault(_reactTapEventPlugin);
+	
+	__webpack_require__(333);
+	
+	__webpack_require__(337);
+	
+	(0, _reactTapEventPlugin2['default'])();
 	
 	var App = (function (_Component) {
 	  _inherits(App, _Component);
@@ -69,6 +77,11 @@ webpackJsonp([0],[
 	      (0, _actions.updateTextField)(e.target.value);
 	    }
 	  }, {
+	    key: '_handleDropdownChange',
+	    value: function _handleDropdownChange(e) {
+	      console.log(e);
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	
@@ -80,11 +93,24 @@ webpackJsonp([0],[
 	          { overlay: _react2['default'].createElement(_materialUi.CardTitle, { title: 'Title', subtitle: 'Subtitle' }) },
 	          _react2['default'].createElement('img', { src: 'http://lorempixel.com/g/600/337/people/' })
 	        ),
-	        _react2['default'].createElement(_materialUi.TextField, {
-	          hintText: (0, _servicesTexts.getText)('floatingLabelText'),
-	          floatingLabelText: (0, _servicesTexts.getText)('floatingLabelText'),
-	          value: this.state.textInputValue,
-	          onChange: this._handleFloatingInputChange })
+	        _react2['default'].createElement(
+	          'div',
+	          { className: 'col-group' },
+	          _react2['default'].createElement(
+	            'div',
+	            { className: 'col-mb-12' },
+	            _react2['default'].createElement(_materialUi.TextField, {
+	              hintText: (0, _servicesTexts.getText)('floatingLabelText'),
+	              floatingLabelText: (0, _servicesTexts.getText)('floatingLabelText'),
+	              value: this.state.textInputValue,
+	              onChange: this._handleFloatingInputChange })
+	          ),
+	          _react2['default'].createElement(
+	            'div',
+	            { className: 'col-mb-12' },
+	            _react2['default'].createElement(_materialUi.DropDownMenu, { menuItems: this.state.menuItems, onChange: this._handleDropdownChange })
+	          )
+	        )
 	      );
 	    }
 	  }]);
@@ -2079,7 +2105,8 @@ webpackJsonp([0],[
 	    value: function getState() {
 	      return {
 	        textInputValue: localStorage.getItem(keys.TEXT_INPUT_VALUE),
-	        startCoords: localStorage.getItem(keys.START_COORDINATES)
+	        startCoords: localStorage.getItem(keys.START_COORDINATES),
+	        menuItems: [{ payload: '1', text: 'Never' }, { payload: '2', text: 'Every Night' }, { payload: '3', text: 'Weeknights' }, { payload: '4', text: 'Weekends' }, { payload: '5', text: 'Weekly' }]
 	      };
 	    }
 	  }]);
@@ -33952,13 +33979,287 @@ webpackJsonp([0],[
 /* 329 */
 /***/ function(module, exports, __webpack_require__) {
 
+	module.exports = function injectTapEventPlugin () {
+	  __webpack_require__(42).injection.injectEventPluginsByName({
+	    "TapEventPlugin":       __webpack_require__(330)
+	  });
+	};
+
+
+/***/ },
+/* 330 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule TapEventPlugin
+	 * @typechecks static-only
+	 */
+	
+	"use strict";
+	
+	var EventConstants = __webpack_require__(41);
+	var EventPluginUtils = __webpack_require__(44);
+	var EventPropagators = __webpack_require__(83);
+	var SyntheticUIEvent = __webpack_require__(97);
+	var TouchEventUtils = __webpack_require__(331);
+	var ViewportMetrics = __webpack_require__(49);
+	
+	var keyOf = __webpack_require__(332);
+	var topLevelTypes = EventConstants.topLevelTypes;
+	
+	var isStartish = EventPluginUtils.isStartish;
+	var isEndish = EventPluginUtils.isEndish;
+	
+	var isTouch = function(topLevelType) {
+	  var touchTypes = [
+	    topLevelTypes.topTouchCancel,
+	    topLevelTypes.topTouchEnd,
+	    topLevelTypes.topTouchStart,
+	    topLevelTypes.topTouchMove
+	  ];
+	  return touchTypes.indexOf(topLevelType) >= 0;
+	}
+	
+	/**
+	 * Number of pixels that are tolerated in between a `touchStart` and `touchEnd`
+	 * in order to still be considered a 'tap' event.
+	 */
+	var tapMoveThreshold = 10;
+	var ignoreMouseThreshold = 750;
+	var startCoords = {x: null, y: null};
+	var lastTouchEvent = null;
+	
+	var Axis = {
+	  x: {page: 'pageX', client: 'clientX', envScroll: 'currentPageScrollLeft'},
+	  y: {page: 'pageY', client: 'clientY', envScroll: 'currentPageScrollTop'}
+	};
+	
+	function getAxisCoordOfEvent(axis, nativeEvent) {
+	  var singleTouch = TouchEventUtils.extractSingleTouch(nativeEvent);
+	  if (singleTouch) {
+	    return singleTouch[axis.page];
+	  }
+	  return axis.page in nativeEvent ?
+	    nativeEvent[axis.page] :
+	    nativeEvent[axis.client] + ViewportMetrics[axis.envScroll];
+	}
+	
+	function getDistance(coords, nativeEvent) {
+	  var pageX = getAxisCoordOfEvent(Axis.x, nativeEvent);
+	  var pageY = getAxisCoordOfEvent(Axis.y, nativeEvent);
+	  return Math.pow(
+	    Math.pow(pageX - coords.x, 2) + Math.pow(pageY - coords.y, 2),
+	    0.5
+	  );
+	}
+	
+	var touchEvents = [
+	  topLevelTypes.topTouchStart,
+	  topLevelTypes.topTouchCancel,
+	  topLevelTypes.topTouchEnd,
+	  topLevelTypes.topTouchMove,
+	];
+	
+	var dependencies = [
+	  topLevelTypes.topMouseDown,
+	  topLevelTypes.topMouseMove,
+	  topLevelTypes.topMouseUp,
+	].concat(touchEvents);
+	
+	var eventTypes = {
+	  touchTap: {
+	    phasedRegistrationNames: {
+	      bubbled: keyOf({onTouchTap: null}),
+	      captured: keyOf({onTouchTapCapture: null})
+	    },
+	    dependencies: dependencies
+	  }
+	};
+	
+	var now = (function() {
+	  if (Date.now) {
+	    return Date.now;
+	  } else {
+	    // IE8 support: http://stackoverflow.com/questions/9430357/please-explain-why-and-how-new-date-works-as-workaround-for-date-now-in
+	    return function () {
+	      return +new Date;
+	    }
+	  }
+	})();
+	
+	var TapEventPlugin = {
+	
+	  tapMoveThreshold: tapMoveThreshold,
+	
+	  ignoreMouseThreshold: ignoreMouseThreshold,
+	
+	  eventTypes: eventTypes,
+	
+	  /**
+	   * @param {string} topLevelType Record from `EventConstants`.
+	   * @param {DOMEventTarget} topLevelTarget The listening component root node.
+	   * @param {string} topLevelTargetID ID of `topLevelTarget`.
+	   * @param {object} nativeEvent Native browser event.
+	   * @return {*} An accumulation of synthetic events.
+	   * @see {EventPluginHub.extractEvents}
+	   */
+	  extractEvents: function(
+	      topLevelType,
+	      topLevelTarget,
+	      topLevelTargetID,
+	      nativeEvent,
+	      nativeEventTarget) {
+	
+	    if (isTouch(topLevelType)) {
+	      lastTouchEvent = now();
+	    } else {
+	      if (lastTouchEvent && (now() - lastTouchEvent) < ignoreMouseThreshold) {
+	        return null;
+	      }
+	    }
+	
+	    if (!isStartish(topLevelType) && !isEndish(topLevelType)) {
+	      return null;
+	    }
+	    var event = null;
+	    var distance = getDistance(startCoords, nativeEvent);
+	    if (isEndish(topLevelType) && distance < tapMoveThreshold) {
+	      event = SyntheticUIEvent.getPooled(
+	        eventTypes.touchTap,
+	        topLevelTargetID,
+	        nativeEvent,
+	        nativeEventTarget
+	      );
+	    }
+	    if (isStartish(topLevelType)) {
+	      startCoords.x = getAxisCoordOfEvent(Axis.x, nativeEvent);
+	      startCoords.y = getAxisCoordOfEvent(Axis.y, nativeEvent);
+	    } else if (isEndish(topLevelType)) {
+	      startCoords.x = 0;
+	      startCoords.y = 0;
+	    }
+	    EventPropagators.accumulateTwoPhaseDispatches(event);
+	    return event;
+	  }
+	
+	};
+	
+	module.exports = TapEventPlugin;
+
+
+/***/ },
+/* 331 */
+/***/ function(module, exports) {
+
+	/**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule TouchEventUtils
+	 */
+	
+	var TouchEventUtils = {
+	  /**
+	   * Utility function for common case of extracting out the primary touch from a
+	   * touch event.
+	   * - `touchEnd` events usually do not have the `touches` property.
+	   *   http://stackoverflow.com/questions/3666929/
+	   *   mobile-sarai-touchend-event-not-firing-when-last-touch-is-removed
+	   *
+	   * @param {Event} nativeEvent Native event that may or may not be a touch.
+	   * @return {TouchesObject?} an object with pageX and pageY or null.
+	   */
+	  extractSingleTouch: function(nativeEvent) {
+	    var touches = nativeEvent.touches;
+	    var changedTouches = nativeEvent.changedTouches;
+	    var hasTouches = touches && touches.length > 0;
+	    var hasChangedTouches = changedTouches && changedTouches.length > 0;
+	
+	    return !hasTouches && hasChangedTouches ? changedTouches[0] :
+	           hasTouches ? touches[0] :
+	           nativeEvent;
+	  }
+	};
+	
+	module.exports = TouchEventUtils;
+
+
+/***/ },
+/* 332 */
+/***/ function(module, exports) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule keyOf
+	 */
+	
+	/**
+	 * Allows extraction of a minified key. Let's the build system minify keys
+	 * without losing the ability to dynamically use key strings as values
+	 * themselves. Pass in an object with a single key/val pair and it will return
+	 * you the string key of that single record. Suppose you want to grab the
+	 * value for a key 'className' inside of an object. Key/val minification may
+	 * have aliased that key to be 'xa12'. keyOf({className: null}) will return
+	 * 'xa12' in that case. Resolve keys you want to use once at startup time, then
+	 * reuse those resolutions.
+	 */
+	"use strict";
+	
+	var keyOf = function (oneKeyObj) {
+	  var key;
+	  for (key in oneKeyObj) {
+	    if (!oneKeyObj.hasOwnProperty(key)) {
+	      continue;
+	    }
+	    return key;
+	  }
+	  return null;
+	};
+	
+	module.exports = keyOf;
+
+/***/ },
+/* 333 */
+/***/ function(module, exports, __webpack_require__) {
+
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(330);
+	var content = __webpack_require__(334);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(332)(content, {});
+	var update = __webpack_require__(336)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -33975,10 +34276,10 @@ webpackJsonp([0],[
 	}
 
 /***/ },
-/* 330 */
+/* 334 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(331)();
+	exports = module.exports = __webpack_require__(335)();
 	// imports
 	
 	
@@ -33989,7 +34290,7 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 331 */
+/* 335 */
 /***/ function(module, exports) {
 
 	/*
@@ -34045,7 +34346,7 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 332 */
+/* 336 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -34267,6 +34568,46 @@ webpackJsonp([0],[
 		if(oldSrc)
 			URL.revokeObjectURL(oldSrc);
 	}
+
+
+/***/ },
+/* 337 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(338);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(336)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../node_modules/css-loader/index.js!./../node_modules/less-loader/index.js!./fluidable.less", function() {
+				var newContent = require("!!./../node_modules/css-loader/index.js!./../node_modules/less-loader/index.js!./fluidable.less");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 338 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(335)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, "/*!\n * Fluidable Grid System 1.2.5\n *\n * Creator: Andri Sigurðsson\n * Site: http://fluidable.com\n * Date: 24.10.2015\n */\n/*\n\t\n\tConfig\n\n*/\n/*\n \t\n\tMobile and up\n \n*/\n[class*=\"col-fixed-\"] {\n  float: left;\n  width: 100%;\n}\n.col-group {\n  padding: 0 36px;\n}\n.col-group:after {\n  display: table;\n  clear: both;\n  content: \" \";\n}\n.col-group .col-group {\n  padding: 0;\n}\n.col-group [class*=\"col-\"] {\n  min-height: 1px;\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n.col-group [class*=\"push-\"],\n.col-group [class*=\"pull-\"] {\n  position: relative;\n}\n.col-mb-12 {\n  width: 100%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n.col-mb-11 {\n  width: 91.66666667%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n.col-mb-10 {\n  width: 83.33333333%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n.col-mb-9 {\n  width: 75%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n.col-mb-8 {\n  width: 66.66666667%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n.col-mb-7 {\n  width: 58.33333333%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n.col-mb-6 {\n  width: 50%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n.col-mb-5 {\n  width: 41.66666667%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n.col-mb-4 {\n  width: 33.33333333%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n.col-mb-3 {\n  width: 25%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n.col-mb-2 {\n  width: 16.66666667%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n.col-mb-1 {\n  width: 8.33333333%;\n  float: left;\n  padding-right: 18px;\n  padding-left: 18px;\n}\n/*\n \t\n\tTablet and up\n \n*/\n@media (min-width: 768px) {\n  .container {\n    max-width: 696px;\n    margin: 0 auto;\n  }\n  .col-12 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 100%;\n    float: left;\n  }\n  .col-11 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 91.66666667%;\n    float: left;\n  }\n  .col-10 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 83.33333333%;\n    float: left;\n  }\n  .col-9 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 75%;\n    float: left;\n  }\n  .col-8 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 66.66666667%;\n    float: left;\n  }\n  .col-7 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 58.33333333%;\n    float: left;\n  }\n  .col-6 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 50%;\n    float: left;\n  }\n  .col-5 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 41.66666667%;\n    float: left;\n  }\n  .col-4 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 33.33333333%;\n    float: left;\n  }\n  .col-3 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 25%;\n    float: left;\n  }\n  .col-2 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 16.66666667%;\n    float: left;\n  }\n  .col-1 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 8.33333333%;\n    float: left;\n  }\n  .col-offset-12 {\n    margin-left: 100%;\n  }\n  .col-offset-11 {\n    margin-left: 91.66666667%;\n  }\n  .col-offset-10 {\n    margin-left: 83.33333333%;\n  }\n  .col-offset-9 {\n    margin-left: 75%;\n  }\n  .col-offset-8 {\n    margin-left: 66.66666667%;\n  }\n  .col-offset-7 {\n    margin-left: 58.33333333%;\n  }\n  .col-offset-6 {\n    margin-left: 50%;\n  }\n  .col-offset-5 {\n    margin-left: 41.66666667%;\n  }\n  .col-offset-4 {\n    margin-left: 33.33333333%;\n  }\n  .col-offset-3 {\n    margin-left: 25%;\n  }\n  .col-offset-2 {\n    margin-left: 16.66666667%;\n  }\n  .col-offset-1 {\n    margin-left: 8.33333333%;\n  }\n  .col-offset-0 {\n    margin-left: 0%;\n  }\n  .col-pull-12 {\n    right: 100%;\n  }\n  .col-pull-11 {\n    right: 91.66666667%;\n  }\n  .col-pull-10 {\n    right: 83.33333333%;\n  }\n  .col-pull-9 {\n    right: 75%;\n  }\n  .col-pull-8 {\n    right: 66.66666667%;\n  }\n  .col-pull-7 {\n    right: 58.33333333%;\n  }\n  .col-pull-6 {\n    right: 50%;\n  }\n  .col-pull-5 {\n    right: 41.66666667%;\n  }\n  .col-pull-4 {\n    right: 33.33333333%;\n  }\n  .col-pull-3 {\n    right: 25%;\n  }\n  .col-pull-2 {\n    right: 16.66666667%;\n  }\n  .col-pull-1 {\n    right: 8.33333333%;\n  }\n  .col-pull-0 {\n    right: 0%;\n  }\n  .col-push-12 {\n    left: 100%;\n  }\n  .col-push-11 {\n    left: 91.66666667%;\n  }\n  .col-push-10 {\n    left: 83.33333333%;\n  }\n  .col-push-9 {\n    left: 75%;\n  }\n  .col-push-8 {\n    left: 66.66666667%;\n  }\n  .col-push-7 {\n    left: 58.33333333%;\n  }\n  .col-push-6 {\n    left: 50%;\n  }\n  .col-push-5 {\n    left: 41.66666667%;\n  }\n  .col-push-4 {\n    left: 33.33333333%;\n  }\n  .col-push-3 {\n    left: 25%;\n  }\n  .col-push-2 {\n    left: 16.66666667%;\n  }\n  .col-push-1 {\n    left: 8.33333333%;\n  }\n  .col-push-0 {\n    left: 0%;\n  }\n  .col-group {\n    margin-right: -18px;\n    margin-left: -18px;\n    padding: 0;\n  }\n  .col-group:after {\n    display: table;\n    clear: both;\n    content: \" \";\n  }\n}\n/*\n \t\n\tDesktop and up\n \n*/\n@media (min-width: 992px) {\n  .container {\n    max-width: 920px;\n    margin: 0 auto;\n  }\n  .col-dt-12 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 100%;\n    float: left;\n  }\n  .col-dt-11 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 91.66666667%;\n    float: left;\n  }\n  .col-dt-10 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 83.33333333%;\n    float: left;\n  }\n  .col-dt-9 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 75%;\n    float: left;\n  }\n  .col-dt-8 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 66.66666667%;\n    float: left;\n  }\n  .col-dt-7 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 58.33333333%;\n    float: left;\n  }\n  .col-dt-6 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 50%;\n    float: left;\n  }\n  .col-dt-5 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 41.66666667%;\n    float: left;\n  }\n  .col-dt-4 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 33.33333333%;\n    float: left;\n  }\n  .col-dt-3 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 25%;\n    float: left;\n  }\n  .col-dt-2 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 16.66666667%;\n    float: left;\n  }\n  .col-dt-1 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 8.33333333%;\n    float: left;\n  }\n  .col-dt-offset-12 {\n    margin-left: 100%;\n  }\n  .col-dt-offset-11 {\n    margin-left: 91.66666667%;\n  }\n  .col-dt-offset-10 {\n    margin-left: 83.33333333%;\n  }\n  .col-dt-offset-9 {\n    margin-left: 75%;\n  }\n  .col-dt-offset-8 {\n    margin-left: 66.66666667%;\n  }\n  .col-dt-offset-7 {\n    margin-left: 58.33333333%;\n  }\n  .col-dt-offset-6 {\n    margin-left: 50%;\n  }\n  .col-dt-offset-5 {\n    margin-left: 41.66666667%;\n  }\n  .col-dt-offset-4 {\n    margin-left: 33.33333333%;\n  }\n  .col-dt-offset-3 {\n    margin-left: 25%;\n  }\n  .col-dt-offset-2 {\n    margin-left: 16.66666667%;\n  }\n  .col-dt-offset-1 {\n    margin-left: 8.33333333%;\n  }\n  .col-dt-offset-0 {\n    margin-left: 0%;\n  }\n  .col-dt-pull-12 {\n    right: 100%;\n  }\n  .col-dt-pull-11 {\n    right: 91.66666667%;\n  }\n  .col-dt-pull-10 {\n    right: 83.33333333%;\n  }\n  .col-dt-pull-9 {\n    right: 75%;\n  }\n  .col-dt-pull-8 {\n    right: 66.66666667%;\n  }\n  .col-dt-pull-7 {\n    right: 58.33333333%;\n  }\n  .col-dt-pull-6 {\n    right: 50%;\n  }\n  .col-dt-pull-5 {\n    right: 41.66666667%;\n  }\n  .col-dt-pull-4 {\n    right: 33.33333333%;\n  }\n  .col-dt-pull-3 {\n    right: 25%;\n  }\n  .col-dt-pull-2 {\n    right: 16.66666667%;\n  }\n  .col-dt-pull-1 {\n    right: 8.33333333%;\n  }\n  .col-dt-pull-0 {\n    right: 0%;\n  }\n  .col-dt-push-12 {\n    left: 100%;\n  }\n  .col-dt-push-11 {\n    left: 91.66666667%;\n  }\n  .col-dt-push-10 {\n    left: 83.33333333%;\n  }\n  .col-dt-push-9 {\n    left: 75%;\n  }\n  .col-dt-push-8 {\n    left: 66.66666667%;\n  }\n  .col-dt-push-7 {\n    left: 58.33333333%;\n  }\n  .col-dt-push-6 {\n    left: 50%;\n  }\n  .col-dt-push-5 {\n    left: 41.66666667%;\n  }\n  .col-dt-push-4 {\n    left: 33.33333333%;\n  }\n  .col-dt-push-3 {\n    left: 25%;\n  }\n  .col-dt-push-2 {\n    left: 16.66666667%;\n  }\n  .col-dt-push-1 {\n    left: 8.33333333%;\n  }\n  .col-dt-push-0 {\n    left: 0%;\n  }\n}\n/*\n \t\n\tLarge desktop and up\n \n*/\n@media (min-width: 1200px) {\n  .container {\n    max-width: 1128px;\n    margin: 0 auto;\n  }\n  .col-ld-12 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 100%;\n    float: left;\n  }\n  .col-ld-11 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 91.66666667%;\n    float: left;\n  }\n  .col-ld-10 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 83.33333333%;\n    float: left;\n  }\n  .col-ld-9 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 75%;\n    float: left;\n  }\n  .col-ld-8 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 66.66666667%;\n    float: left;\n  }\n  .col-ld-7 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 58.33333333%;\n    float: left;\n  }\n  .col-ld-6 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 50%;\n    float: left;\n  }\n  .col-ld-5 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 41.66666667%;\n    float: left;\n  }\n  .col-ld-4 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 33.33333333%;\n    float: left;\n  }\n  .col-ld-3 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 25%;\n    float: left;\n  }\n  .col-ld-2 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 16.66666667%;\n    float: left;\n  }\n  .col-ld-1 {\n    padding-left: 18px;\n    padding-right: 18px;\n    width: 8.33333333%;\n    float: left;\n  }\n  .col-ld-offset-12 {\n    margin-left: 100%;\n  }\n  .col-ld-offset-11 {\n    margin-left: 91.66666667%;\n  }\n  .col-ld-offset-10 {\n    margin-left: 83.33333333%;\n  }\n  .col-ld-offset-9 {\n    margin-left: 75%;\n  }\n  .col-ld-offset-8 {\n    margin-left: 66.66666667%;\n  }\n  .col-ld-offset-7 {\n    margin-left: 58.33333333%;\n  }\n  .col-ld-offset-6 {\n    margin-left: 50%;\n  }\n  .col-ld-offset-5 {\n    margin-left: 41.66666667%;\n  }\n  .col-ld-offset-4 {\n    margin-left: 33.33333333%;\n  }\n  .col-ld-offset-3 {\n    margin-left: 25%;\n  }\n  .col-ld-offset-2 {\n    margin-left: 16.66666667%;\n  }\n  .col-ld-offset-1 {\n    margin-left: 8.33333333%;\n  }\n  .col-ld-offset-0 {\n    margin-left: 0%;\n  }\n  .col-ld-pull-12 {\n    right: 100%;\n  }\n  .col-ld-pull-11 {\n    right: 91.66666667%;\n  }\n  .col-ld-pull-10 {\n    right: 83.33333333%;\n  }\n  .col-ld-pull-9 {\n    right: 75%;\n  }\n  .col-ld-pull-8 {\n    right: 66.66666667%;\n  }\n  .col-ld-pull-7 {\n    right: 58.33333333%;\n  }\n  .col-ld-pull-6 {\n    right: 50%;\n  }\n  .col-ld-pull-5 {\n    right: 41.66666667%;\n  }\n  .col-ld-pull-4 {\n    right: 33.33333333%;\n  }\n  .col-ld-pull-3 {\n    right: 25%;\n  }\n  .col-ld-pull-2 {\n    right: 16.66666667%;\n  }\n  .col-ld-pull-1 {\n    right: 8.33333333%;\n  }\n  .col-ld-pull-0 {\n    right: 0%;\n  }\n  .col-ld-push-12 {\n    left: 100%;\n  }\n  .col-ld-push-11 {\n    left: 91.66666667%;\n  }\n  .col-ld-push-10 {\n    left: 83.33333333%;\n  }\n  .col-ld-push-9 {\n    left: 75%;\n  }\n  .col-ld-push-8 {\n    left: 66.66666667%;\n  }\n  .col-ld-push-7 {\n    left: 58.33333333%;\n  }\n  .col-ld-push-6 {\n    left: 50%;\n  }\n  .col-ld-push-5 {\n    left: 41.66666667%;\n  }\n  .col-ld-push-4 {\n    left: 33.33333333%;\n  }\n  .col-ld-push-3 {\n    left: 25%;\n  }\n  .col-ld-push-2 {\n    left: 16.66666667%;\n  }\n  .col-ld-push-1 {\n    left: 8.33333333%;\n  }\n  .col-ld-push-0 {\n    left: 0%;\n  }\n}\n/*\n\n\tFixed aspect ratio columns\n\n*/\n.col-fixed-hd,\n.col-fixed-landscape,\n.col-fixed-square,\n.col-fixed-portrait {\n  position: relative;\n}\n.col-fixed-hd:before,\n.col-fixed-landscape:before,\n.col-fixed-square:before,\n.col-fixed-portrait:before {\n  content: \"\";\n  display: block;\n}\n.col-fixed-hd .col-content,\n.col-fixed-landscape .col-content,\n.col-fixed-square .col-content,\n.col-fixed-portrait .col-content {\n  position: absolute;\n  top: 0;\n  right: 18px;\n  bottom: 0;\n  left: 18px;\n  padding: 0;\n}\n.col-fixed-hd:before {\n  margin-top: 56.25%;\n}\n.col-fixed-landscape:before {\n  margin-top: 75%;\n}\n.col-fixed-square:before {\n  margin-top: 100%;\n}\n.col-fixed-portrait:before {\n  margin-top: 133.33333333%;\n}\n/*\n \t\n\tOther\n \n*/\n.center-block {\n  margin: 0 auto;\n}\n.clear:after {\n  display: table;\n  clear: both;\n  content: \" \";\n}\n", ""]);
+	
+	// exports
 
 
 /***/ }
