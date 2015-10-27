@@ -1,6 +1,6 @@
-let express = require('express');
-let router = express.Router();
-let venuesController = require('../controllers/venues');
+var express = require('express');
+var router = express.Router();
+var venuesController = require('../controllers/venues');
 
 router.get('/', venuesController.getClosestVenues);
 

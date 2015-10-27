@@ -1,4 +1,4 @@
-let forsquare = require('../services/forsquare-service');
+var forsquare = require('../services/forsquare-service');
 
 var Venues = {
   getClosestVenues: function (req, res) {
