@@ -25,6 +25,7 @@
     "react-addons-transition-group": "^0.14.0",
     "react-addons-update": "^0.14.0",
     "react-dom": "^0.14.0",
+    "react-google-maps": "^4.2.0",
     "react-tap-event-plugin": "^0.2.1",
     "reactive-flux": "^0.1.2",
     "serve-favicon": "~2.3.0",

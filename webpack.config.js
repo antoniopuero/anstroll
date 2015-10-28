@@ -3,6 +3,7 @@ module.exports = {
   context: __dirname,
   entry: {
     'starter-point': './client/entries/starter-point/starter-point',
+    'map-page': './client/entries/map-page/map-page',
     vendor: ['react', 'ramda', 'react-dom']
   },
   output: {

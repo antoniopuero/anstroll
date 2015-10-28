@@ -7,4 +7,9 @@ router.get('/', function (req, res) {
 });
 
 
+router.get('/map', function (req, res) {
+  res.render('map-page', {version: version});
+});
+
+
 module.exports = router;

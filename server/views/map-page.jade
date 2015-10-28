@@ -1,0 +1,7 @@
+extends layout
+
+block content
+  h1 #{greetings}
+  div#main
+  script(src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places")
+  script(src="./dist/map-page.bundle.js?version=#{version}")
