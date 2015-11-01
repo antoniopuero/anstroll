@@ -1,13 +1,12 @@
 var webpack = require("webpack");
 module.exports = {
   context: __dirname,
-  entry: {
-    'starter-point': './client/entries/starter-point/starter-point',
-    'map-page': './client/entries/map-page/map-page',
-    vendor: ['react', 'ramda', 'react-dom']
-  },
+  entry: [
+    './client/router' // Your appʼs entry point
+  ],
   output: {
     path: __dirname + "/client/dist",
+    publicPath: '/dist/',
     filename: "[name].bundle.js"
   },
   devtool: 'source-map',
@@ -23,7 +22,7 @@ module.exports = {
     loaders: [
       {
         test: /\.es6$/,
-        loader: 'babel'
+        loader: 'react-hot!babel'
       },
       {
         test: /\.less$/,
@@ -32,6 +31,6 @@ module.exports = {
     ]
   },
   plugins: [
-    new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js')
+    new webpack.HotModuleReplacementPlugin()
   ]
 };

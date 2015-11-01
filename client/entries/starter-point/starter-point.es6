@@ -1,31 +1,29 @@
 import venues from 'services/venues'
-import {receiveTexts} from 'services/cms'
 import {getText, setTexts} from 'services/texts'
-import Component from '../react-component'
-import React from 'react'
-import ReactDOM from 'react-dom'
+import React, {Component} from 'react'
 import {TextField, CardMedia, CardTitle, DropDownMenu} from 'material-ui'
-import {updateTextField, updateStartCoords} from '../actions'
-import mainStore from '../store'
 import injectTapEventPlugin from 'react-tap-event-plugin'
+import {updateInputValueAction, updateCoords} from '../../action-creators';
+import store from '../../store';
 injectTapEventPlugin();
 
 import './starter-point.less'
-import '../../fluidable.less'
 
 class App extends Component {
 
   constructor (props) {
     super(props);
-    this.state = mainStore.getState();
+    this.state = store.getState();
   }
 
   componentWillMount () {
-    navigator.geolocation.getCurrentPosition(updateStartCoords);
+    navigator.geolocation.getCurrentPosition(coords => {
+      store.dispatch(updateCoords(coords));
+    });
   }
 
   _handleFloatingInputChange (e) {
-    updateTextField(e.target.value);
+    store.dispatch(updateInputValueAction('textField', e.target.value));
   }
 
   _handleDropdownChange (e) {
@@ -44,23 +42,15 @@ class App extends Component {
           <TextField
             hintText={getText('floatingLabelText')}
             floatingLabelText={getText('floatingLabelText')}
-            value={this.state.textInputValue}
+            value={this.state.strollModel.textField}
             onChange={this._handleFloatingInputChange}/>
         </div>
         <div className="col-mb-12">
-          <DropDownMenu menuItems={this.state.menuItems} onChange={this._handleDropdownChange}/>
         </div>
       </div>
 
     </div>);
   }
 }
-
-
-receiveTexts().then((res) => {
-  setTexts(res.body);
-
-  ReactDOM.render(<App/>, document.getElementById('main'));
-});
 
 export default App;

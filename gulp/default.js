@@ -1,3 +1,3 @@
 module.exports = function () {
 };
-module.exports.dependencies = ['nodemon'];
+module.exports.dependencies = ['nodemon', 'webpack'];

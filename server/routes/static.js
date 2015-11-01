@@ -3,7 +3,7 @@ var router = express.Router();
 var version = require('../../package.json').version;
 
 router.get('/', function (req, res) {
-  res.render('starter-point', {version: version, greetings: res.__('greetings')});
+  res.render('index', {version: version, greetings: res.__('greetings')});
 });
 
 

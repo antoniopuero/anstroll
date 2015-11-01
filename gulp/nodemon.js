@@ -7,9 +7,8 @@ module.exports = function () {
   livereload.listen();
   nodemon({
     script: path.resolve(__dirname, '../bin/www')
-    , ext: 'html js less jade es6'
-    , ignore: [path.resolve(__dirname, '../client/dist/*'), path.resolve(__dirname, '../gulp/*')]
-    , tasks: ['webpack']
+    , ext: 'html js jade'
+    , ignore: [path.resolve(__dirname, '../client/*'), path.resolve(__dirname, '../gulp/*')]
     , nodeArgs: ['--harmony', '--use_strict', '--debug']
   })
     .on('start', function () {
@@ -17,5 +16,4 @@ module.exports = function () {
     })
 };
 
-
-module.exports.dependencies = ['webpack', 'debug'];
+module.exports.dependencies = ['debug'];
