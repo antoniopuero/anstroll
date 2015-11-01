@@ -7,14 +7,10 @@ export function updateInputValueAction (name, value) {
     value
   }
 }
-export function updateTexts (getText) {
-  return (dispatch) => {
-    getText().then((res) => {
-      dispatch({
-        type: actions.UPDATE_TEXTS,
-        texts: res.body
-      });
-    })
+export function updateTexts (texts) {
+  return {
+    type: actions.UPDATE_TEXTS,
+    texts
   };
 }
 export function updateCoords (coords) {

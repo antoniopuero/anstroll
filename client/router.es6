@@ -11,8 +11,9 @@ import starterPoint from './entries/starter-point/starter-point'
 
 
 import './fluidable.less'
-
-store.dispatch(updateTexts(receiveTexts));
+receiveTexts().then((res) => {
+  store.dispatch(updateTexts(res.body));
+});
 
 render((
   <Provider store={store}>

@@ -1,6 +1,7 @@
 import R from 'ramda'
 import {createStore, combineReducers, applyMiddleware} from 'redux'
 import * as actions from './actions'
+import extend from 'extend'
 
 let getCoords = R.compose(R.join(',')
   , R.map(coord => coord.toPrecision(4))
@@ -15,25 +16,25 @@ const thunk = store => next => action => {
 };
 
 let reducers = {
-  strollModel: (prevState = {}, action) => {
+  strollModel: (prevState = {}, action = {}) => {
     switch (action.type) {
       case actions.UPDATE_INPUT_VALUE:
-        let newValueState = {};
-        newValueState[action.name] = action.value;
-        return Object.assign(newValueState, prevState);
+        let newState = extend({}, prevState);
+        newState[action.name] = action.value;
+        return newState;
       default:
         return prevState;
     }
   },
-  texts: (prevState = {}, action) => {
+  texts: (prevState = {}, action = {}) => {
     switch (action.type) {
       case actions.UPDATE_TEXTS:
-        return Object.assign(action.texts, prevState);
+        return extend({}, action.texts, prevState);
       default:
         return prevState;
     }
   },
-  coords: (prevState = '', action) => {
+  coords: (prevState = '', action = {}) => {
     switch (action.type) {
       case actions.UPDATE_COORDINATES:
         return getCoords(action.coords);

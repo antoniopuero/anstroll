@@ -1,7 +1,7 @@
 var gutil = require("gulp-util");
 var webpack = require("webpack");
 var WebpackDevServer = require('webpack-dev-server');
-var webpackConfig = require("../webpack.config.js");
+var webpackConfig = require("../webpack.dev.config");
 
 module.exports = function (callback) {
   webpackConfig.entry.unshift('webpack-dev-server/client?http://0.0.0.0:3000', 'webpack/hot/only-dev-server');

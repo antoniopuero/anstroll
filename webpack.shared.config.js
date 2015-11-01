@@ -1,16 +1,13 @@
-var webpack = require("webpack");
 module.exports = {
   context: __dirname,
   entry: [
-    './client/router' // Your appʼs entry point
+    './client/router'
   ],
   output: {
     path: __dirname + "/client/dist",
     publicPath: '/dist/',
     filename: "[name].bundle.js"
   },
-  devtool: 'source-map',
-  debug: true,
   resolve: {
     alias: {
       services: __dirname + '/client/services'
@@ -22,15 +19,12 @@ module.exports = {
     loaders: [
       {
         test: /\.es6$/,
-        loader: 'react-hot!babel'
+        loader: 'babel'
       },
       {
         test: /\.less$/,
         loader: 'style!css!less'
       }
     ]
-  },
-  plugins: [
-    new webpack.HotModuleReplacementPlugin()
-  ]
+  }
 };
