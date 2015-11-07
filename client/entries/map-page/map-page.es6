@@ -3,7 +3,7 @@ import React, {Component} from 'react'
 import ReactDOM from 'react-dom'
 import SimpleMap from './simple-map'
 
-//import './map-page.less'
+import './map-page.less'
 
 class MapPage extends Component {
 

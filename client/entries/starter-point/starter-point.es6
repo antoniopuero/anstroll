@@ -12,7 +12,7 @@ function mapDispatchToProps(dispatch) {
   return { actions: bindActionCreators(actionCreators, dispatch) };
 }
 
-//import './starter-point.less'
+import './starter-point.less'
 
 class App extends Component {
 
