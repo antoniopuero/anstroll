@@ -1,7 +1,7 @@
 module.exports = {
   context: __dirname,
   entry: [
-    './client/router'
+    './client/app'
   ],
   output: {
     path: __dirname + "/client/dist",

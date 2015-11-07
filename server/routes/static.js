@@ -1,15 +1,16 @@
-var express = require('express');
-var router = express.Router();
-var version = require('../../package.json').version;
+import express from 'express'
+let router = express.Router();
+import {version} from '../../package.json';
 
-router.get('/', function (req, res) {
-  res.render('index', {version: version, greetings: res.__('greetings')});
+router.get('/', (req, res) => {
+
+  res.render('index', {version, greetings: res.__('greetings')});
 });
 
 
-router.get('/map', function (req, res) {
-  res.render('map-page', {version: version});
+router.get('/map', (req, res) => {
+  res.render('map-page', {version});
 });
 
 
-module.exports = router;
+export default router;

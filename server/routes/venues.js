@@ -1,8 +1,8 @@
-var express = require('express');
+import express from 'express'
 var router = express.Router();
-var venuesController = require('../controllers/venues');
+import venuesController from '../controllers/venues';
 
 router.get('/', venuesController.getClosestVenues);
 
 
-module.exports = router;
+export default router;

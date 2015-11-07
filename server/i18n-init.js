@@ -1,4 +1,4 @@
-var i18n = require("i18n");
+import i18n from 'i18n'
 i18n.configure({
   // setup some locales - other locales default to en silently
   locales: ['en', 'ua'],
@@ -13,4 +13,4 @@ i18n.configure({
   objectNotation: true
 });
 
-module.exports = i18n;
+export default i18n;

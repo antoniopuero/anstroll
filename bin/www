@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-
+require('babel-core/register');
 var app = require('../server/server');
 var debug = require('debug')('anstroll:server');
 var http = require('http');

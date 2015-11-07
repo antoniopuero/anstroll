@@ -1,20 +1,18 @@
-import venues from 'services/venues'
-import {getText, setTexts} from 'services/texts'
+import venues from '../../services/venues'
+import {getText, setTexts} from '../../services/texts'
 import React, {Component} from 'react'
 import {connect} from 'react-redux'
 import { bindActionCreators } from 'redux'
 import {TextField, CardMedia, CardTitle, DropDownMenu} from 'material-ui'
-import injectTapEventPlugin from 'react-tap-event-plugin'
 import * as actionCreators from '../../action-creators'
 import store from '../../store'
-injectTapEventPlugin();
 
 
 function mapDispatchToProps(dispatch) {
   return { actions: bindActionCreators(actionCreators, dispatch) };
 }
 
-import './starter-point.less'
+//import './starter-point.less'
 
 class App extends Component {
 
@@ -30,10 +28,6 @@ class App extends Component {
 
   _handleFloatingInputChange (e) {
     this.props.actions.updateInputValueAction('textField', e.target.value);
-  }
-
-  _handleDropdownChange (e) {
-    console.log(e)
   }
 
   render () {
